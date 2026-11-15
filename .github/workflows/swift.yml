@@ -1,5 +1,5 @@
 
-name: NSMOD FF NETWORK Build
+name: NSMOD FF NETWORK - iOS Build
 
 on:
   workflow_dispatch:
@@ -12,29 +12,48 @@ permissions:
 
 jobs:
   build:
+    name: Build NSMOD iOS
     runs-on: macos-15
 
     steps:
-      - name: Checkout My GitHub
-        uses: actions/checkout@v4
+      - name: Checkout GitHub Repository
+        uses: actions/checkout@v5
         with:
           repository: xuanvumai/NSMOD-FF-Network-2023
           ref: main
+          fetch-depth: 1
 
-      - name: Check Swift
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Check Node and Swift
         run: |
+          node --version
+          npm --version
           swift --version
           xcodebuild -version
+
+      - name: Check Source Files
+        run: |
+          echo "Checking project files"
+
+          test -f project.yml
+          test -f Sources/NSMODFFNetwork/ContentView.swift
+          test -f Sources/NSMODFFNetwork/NSMODFFNetworkApp.swift
+
+          echo "All required files found"
 
       - name: Install XcodeGen
         run: |
           brew install xcodegen
 
-      - name: Generate Project
+      - name: Generate Xcode Project
         run: |
           xcodegen generate
 
-      - name: Check Scheme
+      - name: Verify Xcode Scheme
         run: |
           xcodebuild -list \
             -project NSMODFFNetwork.xcodeproj
@@ -49,3 +68,7 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO \
             build
+
+      - name: Build Result
+        run: |
+          echo "NSMOD FF NETWORK build completed"
