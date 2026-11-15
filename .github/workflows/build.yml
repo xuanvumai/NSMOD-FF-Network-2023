@@ -1,0 +1,43 @@
+
+name: Build NSMOD FF NETWORK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate project
+        run: xcodegen generate
+
+      - name: Build iOS
+        run: |
+          xcodebuild \
+            -project NSMODFFNetwork.xcodeproj \
+            -scheme NSMODFFNetwork \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package IPA
+        run: |
+          mkdir Payload
+          cp -R build/Build/Products/Release-iphoneos/NSMODFFNetwork.app Payload/
+          zip -r NSMOD-FF-Network-2023.ipa Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NSMOD-FF-Network-IPA
+          path: NSMOD-FF-Network-2023.ipa
