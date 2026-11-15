@@ -1,0 +1,23 @@
+
+name: NSMODFFNetwork
+
+options:
+  bundleIdPrefix: vn.nsmod
+  deploymentTarget:
+    iOS: "16.0"
+
+targets:
+  NSMODFFNetwork:
+    type: application
+    platform: iOS
+    sources:
+      - Sources/NSMODFFNetwork
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: vn.nsmod.ffnetwork2023
+        PRODUCT_NAME: NSMODFFNetwork
+        INFOPLIST_KEY_CFBundleDisplayName: NSMOD FF NETWORK 2023
+        IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGNING_ALLOWED: NO
