@@ -1,6 +1,7 @@
 
 import SwiftUI
 import Network
+import Combine
 
 final class NetworkMonitor: ObservableObject {
     private let monitor = NWPathMonitor()
@@ -9,25 +10,27 @@ final class NetworkMonitor: ObservableObject {
     )
 
     @Published var isConnected = false
-    @Published var connectionType = "Đang kiểm tra"
+    @Published var connectionType = "Đang kiểm tra..."
     @Published var isExpensive = false
     @Published var isConstrained = false
 
     init() {
         monitor.pathUpdateHandler = { [weak self] path in
             DispatchQueue.main.async {
-                self?.isConnected = path.status == .satisfied
-                self?.isExpensive = path.isExpensive
-                self?.isConstrained = path.isConstrained
+                guard let self = self else { return }
+
+                self.isConnected = path.status == .satisfied
+                self.isExpensive = path.isExpensive
+                self.isConstrained = path.isConstrained
 
                 if path.usesInterfaceType(.wifi) {
-                    self?.connectionType = "Wi-Fi"
+                    self.connectionType = "Wi-Fi"
                 } else if path.usesInterfaceType(.cellular) {
-                    self?.connectionType = "Di động"
+                    self.connectionType = "4G / 5G"
                 } else if path.usesInterfaceType(.wiredEthernet) {
-                    self?.connectionType = "Ethernet"
+                    self.connectionType = "Ethernet"
                 } else {
-                    self?.connectionType = "Không xác định"
+                    self.connectionType = "Không xác định"
                 }
             }
         }
@@ -46,8 +49,9 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 22) {
-                    VStack(spacing: 12) {
+                VStack(spacing: 20) {
+
+                    VStack(spacing: 10) {
                         Image(systemName: "network")
                             .font(.system(size: 55))
                             .foregroundStyle(.blue)
@@ -61,13 +65,13 @@ struct ContentView: View {
                     }
                     .padding(.top, 25)
 
-                    VStack(spacing: 14) {
+                    VStack(spacing: 12) {
                         Image(
                             systemName: network.isConnected
                             ? "checkmark.circle.fill"
                             : "xmark.circle.fill"
                         )
-                        .font(.system(size: 48))
+                        .font(.system(size: 50))
                         .foregroundStyle(
                             network.isConnected ? .green : .red
                         )
@@ -78,13 +82,19 @@ struct ContentView: View {
                             : "Chưa có kết nối Internet"
                         )
                         .font(.headline)
+
+                        Text("Trạng thái được cập nhật tự động")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(25)
                     .background(
                         Color(.secondarySystemBackground)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .clipShape(
+                        RoundedRectangle(cornerRadius: 20)
+                    )
 
                     infoCard(
                         title: "Loại kết nối",
@@ -104,14 +114,20 @@ struct ContentView: View {
                         icon: "speedometer"
                     )
 
-                    Text(
-                        "Ứng dụng theo dõi trạng thái mạng theo thời gian thực. "
-                        + "Không đảm bảo thay đổi hoặc giảm độ trễ máy chủ."
-                    )
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                    VStack(spacing: 8) {
+                        Text("NSMOD FF NETWORK")
+                            .font(.headline)
+
+                        Text(
+                            "Công cụ theo dõi trạng thái kết nối mạng. "
+                            + "Không can thiệp vào máy chủ trò chơi "
+                            + "hoặc đảm bảo giảm ping."
+                        )
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                    }
+                    .padding(.top, 10)
                 }
                 .padding()
             }
@@ -146,6 +162,8 @@ struct ContentView: View {
         .padding()
         .frame(maxWidth: .infinity)
         .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 15))
+        .clipShape(
+            RoundedRectangle(cornerRadius: 15)
+        )
     }
 }
