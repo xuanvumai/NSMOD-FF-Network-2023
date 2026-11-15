@@ -24,6 +24,6 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.xuanvumai.nsmodffnetwork
         PRODUCT_NAME: NSMODFFNetwork
         INFOPLIST_KEY_CFBundleDisplayName: NSMOD FF NETWORK
-        TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGNING_ALLOWED: NO
