@@ -1,0 +1,52 @@
+
+name: NSMOD FF Network iOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Setup Swift and Xcode
+        run: |
+          swift --version
+          xcodebuild -version
+
+      - name: Verify Source Directory
+        run: |
+          test -f project.yml
+          test -d Sources/NSMODFFNetwork
+          echo "Source directory found"
+
+      - name: Install XcodeGen
+        run: |
+          brew install xcodegen
+
+      - name: Generate Xcode Project
+        run: |
+          xcodegen generate
+          ls -la NSMODFFNetwork.xcodeproj
+
+      - name: Verify Scheme
+        run: |
+          xcodebuild -list \
+            -project NSMODFFNetwork.xcodeproj
+
+      - name: Build iOS
+        run: |
+          xcodebuild \
+            -project NSMODFFNetwork.xcodeproj \
+            -scheme NSMODFFNetwork \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
