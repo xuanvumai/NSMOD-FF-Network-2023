@@ -1,5 +1,5 @@
 
-name: NSMOD FF Network iOS
+name: NSMOD FF NETWORK Build
 
 on:
   workflow_dispatch:
@@ -7,40 +7,39 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: macos-15
 
     steps:
-      - name: Checkout Source
+      - name: Checkout My GitHub
         uses: actions/checkout@v4
+        with:
+          repository: xuanvumai/NSMOD-FF-Network-2023
+          ref: main
 
-      - name: Setup Swift and Xcode
+      - name: Check Swift
         run: |
           swift --version
           xcodebuild -version
-
-      - name: Verify Source Directory
-        run: |
-          test -f project.yml
-          test -d Sources/NSMODFFNetwork
-          echo "Source directory found"
 
       - name: Install XcodeGen
         run: |
           brew install xcodegen
 
-      - name: Generate Xcode Project
+      - name: Generate Project
         run: |
           xcodegen generate
-          ls -la NSMODFFNetwork.xcodeproj
 
-      - name: Verify Scheme
+      - name: Check Scheme
         run: |
           xcodebuild -list \
             -project NSMODFFNetwork.xcodeproj
 
-      - name: Build iOS
+      - name: Build iOS Simulator
         run: |
           xcodebuild \
             -project NSMODFFNetwork.xcodeproj \
