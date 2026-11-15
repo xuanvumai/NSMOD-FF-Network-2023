@@ -1,5 +1,5 @@
 
-name: NSMOD FF NETWORK - iOS Build
+name: NSMOD FF NETWORK - Unsigned IPA
 
 on:
   workflow_dispatch:
@@ -12,63 +12,76 @@ permissions:
 
 jobs:
   build:
-    name: Build NSMOD iOS
+    name: Build Unsigned iOS IPA
     runs-on: macos-15
 
     steps:
-      - name: Checkout GitHub Repository
-        uses: actions/checkout@v5
-        with:
-          repository: xuanvumai/NSMOD-FF-Network-2023
-          ref: main
-          fetch-depth: 1
+      - name: Checkout Repository
+        uses: actions/checkout@v7
 
       - name: Setup Node.js 24
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: '24'
+          package-manager-cache: false
 
-      - name: Check Node and Swift
+      - name: Check Environment
         run: |
           node --version
           npm --version
           swift --version
           xcodebuild -version
 
-      - name: Check Source Files
+      - name: Verify Source
         run: |
-          echo "Checking project files"
-
           test -f project.yml
           test -f Sources/NSMODFFNetwork/ContentView.swift
           test -f Sources/NSMODFFNetwork/NSMODFFNetworkApp.swift
 
-          echo "All required files found"
-
       - name: Install XcodeGen
-        run: |
-          brew install xcodegen
+        run: brew install xcodegen
 
       - name: Generate Xcode Project
-        run: |
-          xcodegen generate
+        run: xcodegen generate
 
-      - name: Verify Xcode Scheme
+      - name: Verify Scheme
         run: |
           xcodebuild -list \
             -project NSMODFFNetwork.xcodeproj
 
-      - name: Build iOS Simulator
+      - name: Archive Unsigned App
         run: |
           xcodebuild \
             -project NSMODFFNetwork.xcodeproj \
             -scheme NSMODFFNetwork \
             -configuration Release \
-            -sdk iphonesimulator \
-            -destination 'generic/platform=iOS Simulator' \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$PWD/build/NSMODFFNetwork.xcarchive" \
             CODE_SIGNING_ALLOWED=NO \
-            build
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            archive
 
-      - name: Build Result
+      - name: Package Unsigned IPA
         run: |
-          echo "NSMOD FF NETWORK build completed"
+          APP="build/NSMODFFNetwork.xcarchive/Products/Applications/NSMODFFNetwork.app"
+
+          test -d "$APP"
+
+          mkdir -p ipa/Payload
+          cp -R "$APP" ipa/Payload/
+
+          cd ipa
+          zip -qry ../NSMODFFNetwork-unsigned.ipa Payload
+
+          cd ..
+          test -s NSMODFFNetwork-unsigned.ipa
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v6
+        with:
+          name: NSMODFFNetwork-Unsigned-IPA
+          path: NSMODFFNetwork-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 7
